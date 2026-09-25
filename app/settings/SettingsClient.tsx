@@ -54,12 +54,13 @@ export function SettingsClient({ initialData }: any) {
     const tempId = 'sec-' + Date.now()
     setData((prev: any) => ({
       ...prev,
-      sections: [...prev.sections, { id: tempId, title, emoji, key: tempId, order: prev.sections.length + 1 }]
+      sections: [...prev.sections, { id: tempId, title, emoji, key: tempId, order: prev.sections.length + 1, active: true }]
     }))
 
     try {
       const res = await fetch(`/api/sections`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, emoji })
       })
       const section = await res.json()
@@ -68,6 +69,42 @@ export function SettingsClient({ initialData }: any) {
         ...prev,
         sections: prev.sections.map((s: any) => s.id === tempId ? section : s)
       }))
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const handleEditSection = async (id: string, oldTitle: string, oldEmoji: string) => {
+    const title = prompt("New section title:", oldTitle)
+    if (!title) return
+    const emoji = prompt("New section emoji:", oldEmoji) || oldEmoji
+
+    setData((prev: any) => ({
+      ...prev,
+      sections: prev.sections.map((s: any) => s.id === id ? { ...s, title, emoji } : s)
+    }))
+
+    try {
+      await fetch(`/api/sections/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, emoji })
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const handleDeleteSection = async (id: string) => {
+    if (!confirm("Delete this entire section? It will be removed from your daily view, but historical records will remain intact.")) return
+
+    setData((prev: any) => ({
+      ...prev,
+      sections: prev.sections.filter((s: any) => s.id !== id)
+    }))
+
+    try {
+      await fetch(`/api/sections/${id}`, { method: "DELETE" })
     } catch (e) {
       console.error(e)
     }
@@ -95,10 +132,26 @@ export function SettingsClient({ initialData }: any) {
           
           return (
             <section key={section.id}>
-              <h2 className="font-serif text-2xl text-ink mb-4 flex items-center gap-2">
-                <span className="text-muted text-sm">{section.emoji}</span>
-                {section.title}
-              </h2>
+              <div className="flex items-center justify-between mb-4 group">
+                <h2 className="font-serif text-2xl text-ink flex items-center gap-2">
+                  <span className="text-muted text-sm">{section.emoji}</span>
+                  {section.title}
+                </h2>
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button 
+                    onClick={() => handleEditSection(section.id, section.title, section.emoji)}
+                    className="text-xs text-muted hover:text-ink transition-colors px-2 py-1"
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteSection(section.id)}
+                    className="text-xs text-red-500 hover:text-red-600 transition-colors px-2 py-1"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
               
               <ul className="flex flex-col gap-2 mb-4">
                 {sectionTemplates.map((t: any) => (

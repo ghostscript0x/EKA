@@ -8,7 +8,7 @@ export async function GET() {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const sections = await prisma.section.findMany({
-    where: { userId: session.user.id },
+    where: { userId: session.user.id, active: true },
     orderBy: { order: 'asc' }
   })
   const templates = await prisma.templateItem.findMany({

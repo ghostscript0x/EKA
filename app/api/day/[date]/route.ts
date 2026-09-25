@@ -13,7 +13,7 @@ export async function GET(
 
   const date = params.date
 
-  let dayRecord = await prisma.dayRecord.upsert({
+  const dayRecord = await prisma.dayRecord.upsert({
     where: { date_userId: { date, userId: session.user.id } },
     update: {},
     create: { date, userId: session.user.id },
@@ -27,7 +27,7 @@ export async function GET(
   })
 
   const sections = await prisma.section.findMany({
-    where: { userId: session.user.id },
+    where: { userId: session.user.id, active: true },
     orderBy: { order: 'asc' }
   })
 

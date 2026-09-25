@@ -38,6 +38,7 @@ model Section {
   title  String
   emoji  String
   order  Int
+  active Boolean @default(true)
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
