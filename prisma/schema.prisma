@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  password      String?
+  name          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  templateItems TemplateItem[]
+  dayRecords    DayRecord[]
+  extraTasks    ExtraTask[]
+  sections      Section[]
+  subscriptions PushSubscription[]
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Section {
+  id     String  @id @default(cuid())
+  key    String
+  title  String
+  emoji  String
+  order  Int
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TemplateItem {
+  id        String  @id @default(cuid())
+  sectionId String
+  label     String
+  order     Int
+  active    Boolean @default(true)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  checkedItems CheckedItem[]
+}
+
+model DayRecord {
+  id         String   @id @default(cuid())
+  date       String   // YYYY-MM-DD
+  note       String?
+  isRestDay  Boolean  @default(false)
+  focus      String?
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  checkedItems CheckedItem[]
+  extraTasks   ExtraTask[]
+
+  @@unique([date, userId])
+}
+
+model CheckedItem {
+  id             String       @id @default(cuid())
+  dayRecordId    String
+  dayRecord      DayRecord    @relation(fields: [dayRecordId], references: [id], onDelete: Cascade)
+  templateItemId String
+  templateItem   TemplateItem @relation(fields: [templateItemId], references: [id], onDelete: Cascade)
+
+  @@unique([dayRecordId, templateItemId])
+}
+
+model ExtraTask {
+  id          String    @id @default(cuid())
+  dayRecordId String
+  dayRecord   DayRecord @relation(fields: [dayRecordId], references: [id], onDelete: Cascade)
+  sectionId   String
+  label       String
+  checked     Boolean   @default(false)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

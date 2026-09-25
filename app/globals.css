@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #FAF9F6;
+  --ink: #1F1E1A;
+  --muted: #8A8577;
+  --accent: #2F6B4F;
+  --accent-soft: #E4EBE3;
+  --line: #E5E2D8;
+  --gold: #C5A059;
+  --rest: #8FA4B5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14140F;
+    --ink: #EDEAE2;
+    --muted: #8A8577;
+    --accent: #2F6B4F;
+    --accent-soft: #1C2621;
+    --line: #2B2A26;
+    --gold: #D4B371;
+    --rest: #3A4F60;
+  }
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  @apply font-sans antialiased transition-colors duration-1000;
+}
+
+.check-draw {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: draw 0.3s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
